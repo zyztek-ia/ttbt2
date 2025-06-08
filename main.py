@@ -11,38 +11,48 @@ def parse_args():
     return parser.parse_args()
 
 def run_flask():
-    app.run(host='0.0.0.0', port=5000)
+    # It's good practice to have a try-except here too for Flask startup
+    try:
+        print("Flask app thread started.")
+        app.run(host='0.0.0.0', port=5000)
+    except Exception as e:
+        print(f"Flask app failed to start or crashed: {e}")
+
 
 if __name__ == "__main__":
     args = parse_args()
-    
-# Pass max views as environment variable
     os.environ["MAX_VIEWS_PER_HOUR"] = str(args.max_views)
+
+    print("Starting Flask API server...")
+    flask_thread = Thread(target=run_flask)
+    flask_thread.daemon = True
+    flask_thread.start()
+
     bot = None
     try:
-        print(f"Iniciando en modo {args.mode}...")
-        bot = TikTokBot()
+        print(f"Iniciando TikTokBot en modo {args.mode}...")
+        bot = TikTokBot() # This is where TikTokBot is initialized
         if not bot.driver:
-            print("Failed to initialize bot - Chrome driver not available")
-            exit(1)
-        bot.run_session()
+            print("Failed to initialize TikTokBot: Chrome driver not available.")
+            # No exit(1) here, allow API to continue running.
+        else:
+            print("TikTokBot initialized successfully.")
+            print("Starting bot session...")
+            bot.run_session()
+            print("Bot session completed.")
     except Exception as e:
-        print(f"Error crítico: {str(e)}")
+        print(f"Error crítico durante la sesión del bot: {str(e)}")
     finally:
         if bot and bot.driver:
             try:
+                print("Cerrando WebDriver...")
                 bot.driver.quit()
+                print("WebDriver closed.")
             except Exception as cleanup_error:
-                print(f"Error closing driver: {cleanup_error}")
-        print("Sesión finalizada. Revisar logs para detalles.")
+                print(f"Error cerrando WebDriver: {cleanup_error}")
+        print("Proceso principal del bot finalizado. El servidor API puede seguir ejecutándose si no es un hilo daemon o si el programa principal se mantiene vivo.")
 
-
-    os.environ["MAX_VIEWS_PER_HOUR"] = str(args.max_views)
-
-    # Start Flask app in a separate thread
-    flask_thread = Thread(target=run_flask)
-    flask_thread.start()
-
-    bot = TikTokBot()
-    
-  
+    # Main thread will exit here if flask_thread is a daemon and bot session finished.
+    # If API should run indefinitely, flask_thread.join() or another mechanism is needed.
+    # For now, matching the previous logic of daemonized Flask thread.
+    print("Main thread exiting.")

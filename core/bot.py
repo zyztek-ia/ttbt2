@@ -3,13 +3,13 @@ import time
 import random
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from utilities.database import AccountManager
-from core.evasion import HumanBehaviorSimulator
+from .account_manager import CoreAccountManager # Corrected import
+from .human_behavior_simulator import HumanBehaviorSimulator # Corrected import
 
 class TikTokBot:
     def __init__(self):
         self.driver = self._init_driver()
-        self.account_manager = AccountManager()
+        self.account_manager = CoreAccountManager() # Corrected class name
         self.behavior = HumanBehaviorSimulator(self.driver)
 
     def _init_driver(self):
