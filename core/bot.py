@@ -7,9 +7,11 @@ from .account_manager import CoreAccountManager # Corrected import
 from .human_behavior_simulator import HumanBehaviorSimulator # Corrected import
 
 class TikTokBot:
-    def __init__(self):
+    def __init__(self, tiktok_username=None, tiktok_password=None):
         self.driver = self._init_driver()
-        self.account_manager = CoreAccountManager() # Corrected class name
+        self.account_manager = CoreAccountManager() # Always initialize
+        self.tiktok_username = tiktok_username
+        self.tiktok_password = tiktok_password
         self.behavior = HumanBehaviorSimulator(self.driver)
 
     def _init_driver(self):
@@ -21,28 +23,48 @@ class TikTokBot:
         return webdriver.Chrome(options=options)
 
     def _authenticate(self):
-        account = self.account_manager.get_next_account()
-        if not account or not account.get("email") or not account.get("password"):
-            print("No se encontró ninguna cuenta válida en la base de datos.")
+        account_to_use = None
+        if self.tiktok_username and self.tiktok_password:
+            print("Using command-line credentials for authentication.")
+            account_to_use = {"email": self.tiktok_username, "password": self.tiktok_password, "source": "cli"}
+        else:
+            print("No command-line credentials provided, trying AccountManager.")
+            account_to_use = self.account_manager.get_next_account()
+
+        if not account_to_use or not account_to_use.get("email") or not account_to_use.get("password"):
+            print("No se encontró ninguna cuenta válida (CLI o AccountManager).")
             return False
+
         try:
             self.driver.get("https://www.tiktok.com/login")
             self.behavior.random_delay(3, 5)
+            print(f"Attempting to log in with username: {account_to_use['email']}")
 
-            # Llenar campos de login
             email_field = self.driver.find_element(By.NAME, "username")
-            self.behavior.human_type(email_field, account['email'])
+            print("Found username field.")
+            self.behavior.human_type(email_field, account_to_use['email'])
 
             pass_field = self.driver.find_element(By.NAME, "password")
-            self.behavior.human_type(pass_field, account['password'])
+            print("Found password field.")
+            self.behavior.human_type(pass_field, account_to_use['password'])
 
-            # Enviar formulario
             submit_btn = self.driver.find_element(By.XPATH, '//button[@type="submit"]')
+            print("Found submit button.")
             self.behavior.human_click(submit_btn)
+            print("Login form submitted.")
 
+            # Basic check for login success (highly simplified)
+            self.behavior.random_delay(5, 7) # Wait for page to potentially change
+            if "login" in self.driver.current_url.lower() or "error" in self.driver.current_url.lower():
+                 print("Login may have failed or redirected to an error page.")
+                 # self.driver.save_screenshot("login_failed_page.png") # Save screenshot if possible
+                 return False
+            print("Login appears successful (no longer on login/error page).")
             return True
+
         except Exception as e:
             print(f"Error de autenticación: {str(e)}")
+            # self.driver.save_screenshot('auth_error.png')
             return False
 
     def run_session(self):

@@ -8,6 +8,8 @@ def parse_args():
     parser = argparse.ArgumentParser(description="TikTok Bot")
     parser.add_argument("--mode", choices=["safe", "balanced", "aggressive"], default="balanced")
     parser.add_argument("--max-views", type=int, default=5000)
+    parser.add_argument("--tiktok-username", type=str, default=None, help="TikTok username for login.")
+    parser.add_argument("--tiktok-password", type=str, default=None, help="TikTok password for login.")
     return parser.parse_args()
 
 def run_flask():
@@ -31,10 +33,10 @@ if __name__ == "__main__":
     bot = None
     try:
         print(f"Iniciando TikTokBot en modo {args.mode}...")
-        bot = TikTokBot() # This is where TikTokBot is initialized
+        # Pass CLI credentials to TikTokBot constructor
+        bot = TikTokBot(tiktok_username=args.tiktok_username, tiktok_password=args.tiktok_password)
         if not bot.driver:
             print("Failed to initialize TikTokBot: Chrome driver not available.")
-            # No exit(1) here, allow API to continue running.
         else:
             print("TikTokBot initialized successfully.")
             print("Starting bot session...")
@@ -50,9 +52,8 @@ if __name__ == "__main__":
                 print("WebDriver closed.")
             except Exception as cleanup_error:
                 print(f"Error cerrando WebDriver: {cleanup_error}")
-        print("Proceso principal del bot finalizado. El servidor API puede seguir ejecutándose si no es un hilo daemon o si el programa principal se mantiene vivo.")
+        print("Proceso principal del bot finalizado.")
 
-    # Main thread will exit here if flask_thread is a daemon and bot session finished.
-    # If API should run indefinitely, flask_thread.join() or another mechanism is needed.
-    # For now, matching the previous logic of daemonized Flask thread.
+    print("Flask API server is running. Main thread will wait for Flask to exit (Ctrl+C to stop API).")
+    flask_thread.join() # Keep main thread alive for Flask
     print("Main thread exiting.")
