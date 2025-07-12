@@ -18,16 +18,18 @@ class DataLoader:
         :param data_file: Ruta al archivo.
         :return: Diccionario con los datos o {}.
         """
-        if data_file.endswith('.json'):
-            try:
-                with open(data_file, 'r', encoding='utf-8') as f:
-                    return json.load(f)
-            except (FileNotFoundError, json.JSONDecodeError):
-                return {}
-        elif data_file.endswith(('.yml', '.yaml')):
-            try:
-                with open(data_file, 'r', encoding='utf-8') as f:
-                    return yaml.safe_load(f)
-            except (FileNotFoundError, yaml.YAMLError):
-                return {}
+        try:
+            with open(data_file, 'r', encoding='utf-8') as f:
+                content = f.read()
+                if not content.strip():
+                    return {}
+                if data_file.endswith('.json'):
+                    return json.loads(content)
+                elif data_file.endswith(('.yml', '.yaml')):
+                    data = yaml.safe_load(content)
+                    if not isinstance(data, dict):
+                        return {}
+                    return data
+        except (FileNotFoundError, json.JSONDecodeError, yaml.YAMLError):
+            return {}
         return {}

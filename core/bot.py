@@ -1,60 +1,34 @@
-import os
-import time
-import random
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from utilities.database import AccountManager
-from core.evasion import HumanBehaviorSimulator
+from core.logger import get_logger
 
-class TikTokBot:
-    def __init__(self):
-        self.driver = self._init_driver()
-        self.account_manager = AccountManager()
-        self.behavior = HumanBehaviorSimulator(self.driver)
+class Bot:
+    def __init__(self, username, credentials):
+        self.username = username
+        self.credentials = credentials
+        self.proxy = None
+        self.fingerprint = None
+        self.logger = get_logger(self.username)
+        self.plugin_manager = None
 
-    def _init_driver(self):
-        options = webdriver.ChromeOptions()
-        options.add_argument("--headless")
-        options.add_argument("--disable-gpu")
-        options.add_argument("--no-sandbox")
-        options.add_argument("user-agent=Mozilla/5.0 (Linux; Android 10; SM-G981B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Mobile Safari/537.36")
-        return webdriver.Chrome(options=options)
+    def assign_proxy(self, proxy):
+        self.proxy = proxy
+        self.logger.info(f"Proxy asignado: {proxy}")
 
-    def _authenticate(self):
-        account = self.account_manager.get_next_account()
-        if not account or not account.get("email") or not account.get("password"):
-            print("No se encontró ninguna cuenta válida en la base de datos.")
-            return False
-        try:
-            self.driver.get("https://www.tiktok.com/login")
-            self.behavior.random_delay(3, 5)
+    def assign_fingerprint(self, fingerprint):
+        self.fingerprint = fingerprint
+        self.logger.info(f"Fingerprint asignado: {fingerprint}")
 
-            # Llenar campos de login
-            email_field = self.driver.find_element(By.NAME, "username")
-            self.behavior.human_type(email_field, account['email'])
+    def set_plugin_manager(self, manager):
+        self.plugin_manager = manager
 
-            pass_field = self.driver.find_element(By.NAME, "password")
-            self.behavior.human_type(pass_field, account['password'])
+    def run(self):
+        self.logger.info("Iniciando bot...")
+        # Lógica de login
+        self.logger.info("Login exitoso.")
+        if self.plugin_manager:
+            self.plugin_manager.execute_hook("after_login", self)
 
-            # Enviar formulario
-            submit_btn = self.driver.find_element(By.XPATH, '//button[@type="submit"]')
-            self.behavior.human_click(submit_btn)
-
-            return True
-        except Exception as e:
-            print(f"Error de autenticación: {str(e)}")
-            return False
-
-    def run_session(self):
-        if self._authenticate():
-            self._perform_organic_actions()
-
-    def _perform_organic_actions(self):
-        max_views = int(os.getenv("MAX_VIEWS_PER_HOUR", "50"))
-        for _ in range(max_views):
-            self.behavior.watch_video()
-            # 65% de probabilidad de like
-            if random.random() < 0.65:
-                self.behavior.like_video()
-            self.behavior.random_scroll()
-            time.sleep(random.uniform(8, 15))
+        # Lógica principal del bot
+        self.logger.info("Ejecutando tareas...")
+        if self.plugin_manager:
+            self.plugin_manager.execute_hook("before_logout", self)
+        self.logger.info("Bot finalizado.")

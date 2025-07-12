@@ -35,7 +35,7 @@ def test_data_loader_file_not_found():
 
 def test_data_loader_invalid_json():
     with tempfile.NamedTemporaryFile("w+", suffix=".json", delete=False) as f:
-        f.write("{invalido: ,}".encode("utf-8"))
+        f.write("{invalido: ,}")
         f.seek(0)
         loader = DataLoader(f.name)
         assert loader.data == {}
@@ -47,7 +47,7 @@ def test_data_loader_invalid_yaml():
     except ImportError:
         return
     with tempfile.NamedTemporaryFile("w+", suffix=".yml", delete=False) as f:
-        f.write(b":- { esto no es yaml")
+        f.write(":- { esto no es yaml")
         f.seek(0)
         loader = DataLoader(f.name)
         assert loader.data == {}
