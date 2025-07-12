@@ -41,3 +41,18 @@
 2025-07-12 06:45:19.529 | INFO     | core.bot:assign_proxy:14 - Proxy asignado: proxyZ
 2025-07-12 06:45:19.530 | INFO     | core.bot:assign_fingerprint:18 - Fingerprint asignado: fpW
 2025-07-12 06:45:19.530 | INFO     | core.bot_engine:initialize_bots:21 - Se inicializaron 2 bots.
+2025-07-12 07:01:18.852 | INFO     | __main__:main:15 - Iniciando el framework TTBT1.
+2025-07-12 07:01:18.854 | INFO     | core.bot:assign_proxy:14 - Proxy asignado: x
+2025-07-12 07:01:18.854 | INFO     | core.bot:assign_fingerprint:18 - Fingerprint asignado: t
+2025-07-12 07:01:18.854 | INFO     | core.bot:assign_proxy:14 - Proxy asignado: r
+2025-07-12 07:01:18.855 | INFO     | core.bot:assign_fingerprint:18 - Fingerprint asignado: .
+2025-07-12 07:01:18.855 | INFO     | core.bot_engine:initialize_bots:21 - Se inicializaron 2 bots.
+2025-07-12 07:01:18.855 | INFO     | core.bot:run:24 - Iniciando bot...
+2025-07-12 07:01:18.855 | INFO     | core.bot:run:26 - Login exitoso.
+2025-07-12 07:01:18.856 | INFO     | core.bot:run:31 - Ejecutando tareas...
+2025-07-12 07:01:18.856 | INFO     | core.bot:run:34 - Bot finalizado.
+2025-07-12 07:01:18.856 | INFO     | core.bot:run:24 - Iniciando bot...
+2025-07-12 07:01:18.856 | INFO     | core.bot:run:26 - Login exitoso.
+2025-07-12 07:01:18.857 | INFO     | core.bot:run:31 - Ejecutando tareas...
+2025-07-12 07:01:18.857 | INFO     | core.bot:run:34 - Bot finalizado.
+2025-07-12 07:01:18.857 | INFO     | __main__:main:32 - Framework TTBT1 finalizado.
