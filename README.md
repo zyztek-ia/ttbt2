@@ -36,6 +36,20 @@ cd ttbt1
 pip install -r requirements.txt
 ```
 
+## Creación de ejecutable para Windows
+
+Para generar un único archivo ejecutable (`.exe`) para Windows, sigue estos pasos:
+
+1.  Asegúrate de tener Python instalado en tu sistema Windows.
+2.  Abre una terminal (`cmd` o `PowerShell`).
+3.  Ejecuta el siguiente script:
+
+```bash
+build.bat
+```
+
+El script se encargará de instalar las dependencias necesarias y de crear el ejecutable. Lo encontrarás en la carpeta `dist/`.
+
 ## Dockerización
 
 ```bash
