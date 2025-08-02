@@ -20,3 +20,12 @@ rad.json
 *.flf
 #Test results file
 TestResults.xml
+
+# TTBT2 Specific Ignores
+# Configuration files
+api_config.json
+*.log
+
+# Database files
+*.sqlite3
+*.db

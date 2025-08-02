@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auditoría y Ética - TTBT2</title>
+    <style>
+        body { font-family: sans-serif; margin: 2em; background: #f9f9f9; }
+        h1 { color: #333; }
+        .container { max-width: 90%; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .log-table { border: 1px solid #ddd; padding: 15px; margin-top: 20px; border-radius: 5px; max-height: 600px; overflow-y: auto; }
+        table { width: 100%; border-collapse: collapse; margin-top: 1em; }
+        th, td { text-align: left; padding: 8px; border-bottom: 1px solid #ddd; font-size: 0.9em; }
+        th { background-color: #f2f2f2; position: sticky; top: 0; }
+        pre { white-space: pre-wrap; word-wrap: break-word; background-color: #eee; padding: 10px; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Log de Auditoría</h1>
+        <p>Registro de acciones importantes realizadas por el sistema para garantizar la transparencia y el cumplimiento ético.</p>
+
+        <div class="log-table">
+            <table>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>Mensaje</th>
+                    <th>Detalles</th>
+                </tr>
+                {% for log in logs %}
+                <tr>
+                    <td>{{ log.record.time.isoformat }}</td>
+                    <td>{{ log.record.message }}</td>
+                    <td><pre>{{ log.record.extra | tojson(indent=2) }}</pre></td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="3">No hay registros de auditoría todavía.</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+</body>
+</html>
