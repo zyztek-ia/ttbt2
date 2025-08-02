@@ -1,18 +1,32 @@
+"""
+Módulo principal del Bot.
+Define la clase TikTokBot que encapsula la lógica de interacción con la plataforma.
+"""
 import os
 import time
 import random
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from utilities.database import AccountManager
-from core.evasion import HumanBehaviorSimulator
+from core.account_manager import CoreAccountManager
+from core.behavior import HumanBehaviorSimulator
 
 class TikTokBot:
+    """
+    Representa un bot principal que interactúa con TikTok.
+    Gestiona el driver de Selenium, la autenticación y las acciones orgánicas.
+    """
     def __init__(self):
+        """
+        Inicializa el bot, el driver de Selenium y los gestores de comportamiento.
+        """
         self.driver = self._init_driver()
-        self.account_manager = AccountManager()
+        self.account_manager = CoreAccountManager()
         self.behavior = HumanBehaviorSimulator(self.driver)
 
     def _init_driver(self):
+        """
+        Configura e inicializa el driver de Selenium (Chrome) con opciones de evasión.
+        """
         options = webdriver.ChromeOptions()
         options.add_argument("--headless")
         options.add_argument("--disable-gpu")
@@ -21,6 +35,10 @@ class TikTokBot:
         return webdriver.Chrome(options=options)
 
     def _authenticate(self):
+        """
+        Realiza el proceso de login en TikTok usando una cuenta del gestor.
+        :return: True si la autenticación es exitosa, False en caso contrario.
+        """
         account = self.account_manager.get_next_account()
         if not account or not account.get("email") or not account.get("password"):
             print("No se encontró ninguna cuenta válida en la base de datos.")
@@ -46,10 +64,17 @@ class TikTokBot:
             return False
 
     def run_session(self):
+        """
+        Inicia y ejecuta una sesión completa del bot.
+        Intenta autenticarse y luego realiza acciones orgánicas.
+        """
         if self._authenticate():
             self._perform_organic_actions()
 
     def _perform_organic_actions(self):
+        """
+        Bucle principal de acciones del bot, como ver videos, dar likes y hacer scroll.
+        """
         max_views = int(os.getenv("MAX_VIEWS_PER_HOUR", "50"))
         for _ in range(max_views):
             self.behavior.watch_video()

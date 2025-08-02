@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuración de APIs - TTBT2</title>
+    <style>
+        body { font-family: sans-serif; margin: 2em; background: #f9f9f9; }
+        h1, h2 { color: #333; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .api-list, .manual-form { border: 1px solid #ddd; padding: 15px; margin-top: 20px; border-radius: 5px; }
+        .api-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee; }
+        .api-item:last-child { border-bottom: none; }
+        .api-status { padding: 5px 10px; border-radius: 12px; color: white; font-size: 0.8em; }
+        .status-connected { background: #28a745; }
+        .status-available { background: #007bff; }
+        .btn { padding: 8px 15px; border: none; border-radius: 4px; color: white; text-decoration: none; cursor: pointer; }
+        .btn-connect { background-color: #007bff; }
+        .manual-form form { display: flex; flex-direction: column; gap: 10px; }
+        .manual-form input { padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Configuración de APIs</h1>
+        <p>Conecta TTBT2 con servicios de terceros para ampliar sus capacidades.</p>
+
+        <div class="api-list">
+            <h2>APIs Disponibles</h2>
+            {% for name, details in apis.items() %}
+            <div class="api-item">
+                <span><strong>{{ name }}</strong> <small>({{ details.type }})</small></span>
+                <div>
+                    {% if details.status == 'connected' %}
+                        <span class="api-status status-connected">Conectado</span>
+                    {% else %}
+                        <span class="api-status status-available">Disponible</span>
+                        <a href="/api-config/connect/{{ name }}" class="btn btn-connect">Conectar</a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="manual-form">
+            <h2>Añadir API Manualmente (con API Key)</h2>
+            <form action="/api-config/add" method="post">
+                <input type="text" name="name" placeholder="Nombre del Servicio" required>
+                <input type="text" name="endpoint" placeholder="Endpoint de la API" required>
+                <input type="password" name="api_key" placeholder="API Key" required>
+                <button type="submit" class="btn btn-connect">Añadir API</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

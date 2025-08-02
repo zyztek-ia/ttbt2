@@ -5,6 +5,9 @@
 import random
 
 class Evasion:
+    """
+    Gestiona la rotación de fingerprints y proxies para evadir la detección.
+    """
     def __init__(self, fingerprints, proxies):
         """
         Inicializa el módulo de evasión.
