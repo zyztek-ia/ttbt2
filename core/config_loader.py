@@ -1,146 +1,142 @@
+"""
+Módulo de utilidad para cargar configuraciones desde archivos JSON o YAML.
+"""
 import json
 import os
-from selenium.webdriver.common.by import By # Added
-from core.logger import get_logger # Added
+import yaml
+from selenium.webdriver.common.by import By
+from core.logger import get_logger
 
-# Initialize logger for this module
-config_loader_logger = get_logger(__name__) # Using __name__ for module-level logger
+logger = get_logger("core.config_loader")
 
-# Mapping from string representations to Selenium By objects
-BY_MAPPING = {
-    "id": By.ID,
-    "name": By.NAME,
-    "xpath": By.XPATH,
-    "css": By.CSS_SELECTOR, # Common abbreviation for CSS_SELECTOR
-    "css_selector": By.CSS_SELECTOR,
-    "class_name": By.CLASS_NAME,
-    "link_text": By.LINK_TEXT,
-    "partial_link_text": By.PARTIAL_LINK_TEXT,
-    "tag_name": By.TAG_NAME
-}
+def load_config(path):
+    """
+    Carga datos de configuración desde un archivo JSON o YAML.
+
+    Args:
+        path (str): La ruta al archivo de configuración.
+
+    Returns:
+        dict: Un diccionario con los datos cargados. Retorna un diccionario vacío
+              si el tipo de archivo no es soportado, el archivo no se encuentra (implícito),
+              o si hay un error de parsing (para YAML). JSON parsing errors might still raise.
+    """
+    if path.endswith(".json"):
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError): # Added FileNotFoundError
+            return {}
+    elif path.endswith((".yml", ".yaml")):
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                return yaml.safe_load(f)
+        except (FileNotFoundError, yaml.YAMLError): # Added FileNotFoundError
+            # Handle YAML parsing errors, perhaps log and return empty dict
+            return {} # Or raise an exception
+    # Fallback for unrecognized file types or if path is None/empty
+    return {}
 
 class ConfigLoader:
     """
-    A utility class for loading configurations from files.
-    Currently supports loading JSON files.
+    Configuration loader class that provides static methods for loading configuration files.
     """
+    
     @staticmethod
-    def load(filepath):
+    def load(path):
         """
-        Loads data from a JSON file.
-
+        Loads configuration data from a JSON or YAML file.
+        
         Args:
-            filepath (str): The path to the JSON file.
-
+            path (str): Path to the configuration file.
+            
         Returns:
-            dict: The data loaded from the JSON file, or an empty dictionary
-                  if the file is not found, not a JSON file, or an error occurs.
+            dict: Dictionary with loaded data. Returns empty dict if file type not supported,
+                  file not found, or parsing error occurs.
         """
-        if not os.path.exists(filepath):
-            config_loader_logger.error(f"Configuration file not found: {filepath}")
+        if not os.path.exists(path):
+            logger.error(f"Configuration file not found: {path}")
             return {}
-        if filepath.endswith(".json"):
+            
+        if path.endswith(".json"):
             try:
-                with open(filepath, "r", encoding="utf-8") as f: # Added encoding
+                with open(path, "r", encoding="utf-8") as f:
                     return json.load(f)
             except json.JSONDecodeError as e:
-                config_loader_logger.error(f"Error decoding JSON from {filepath}: {e}")
+                logger.error(f"Error decoding JSON from {path}: {e}")
                 return {}
-            except Exception as e:
-                config_loader_logger.error(f"An unexpected error occurred while loading {filepath}: {e}")
+        elif path.endswith((".yml", ".yaml")):
+            try:
+                with open(path, "r", encoding="utf-8") as f:
+                    return yaml.safe_load(f)
+            except yaml.YAMLError as e:
+                logger.error(f"Error parsing YAML from {path}: {e}")
                 return {}
         else:
-            config_loader_logger.warning(f"File type not supported for loading: {filepath}. Only .json is supported.")
+            logger.error(f"File type not supported for loading: {path}")
             return {}
-        # Add YAML or other loaders as needed in the future
-
+            
     @staticmethod
-    def load_selectors(filepath="selectors.json"):
+    def load_selectors(path):
         """
-        Loads and processes Selenium selectors from a JSON file.
-
-        The JSON file is expected to have a structure where keys are page names
-        (or component groups), and values are dictionaries of selectors. Each
-        selector is defined by a name and a dictionary containing 'by' (the
-        selector strategy, e.g., "xpath", "id") and 'value' (the selector string).
-
-        Example JSON structure:
-        {
-            "login_page": {
-                "username_field": {"by": "id", "value": "user-name"},
-                "password_field": {"by": "name", "value": "password"}
-            },
-            "home_page": {
-                "title_header": {"by": "xpath", "value": "//span[@class='title']"}
-            }
-        }
-
+        Loads web element selectors from a JSON or YAML file and converts them
+        to Selenium By objects.
+        
         Args:
-            filepath (str, optional): The path to the JSON file containing
-                                      selector definitions. Defaults to "selectors.json".
-
+            path (str): Path to the selectors configuration file.
+            
         Returns:
-            dict: A dictionary containing the processed selectors. The structure mirrors
-                  the input JSON, but the selector definitions are replaced by tuples
-                  of (ByObject, value_string). For example:
-                  {
-                      "login_page": {
-                          "username_field": (By.ID, "user-name"),
-                          "password_field": (By.NAME, "password")
-                      },
-                      ...
-                  }
-                  Returns an empty dictionary if the file cannot be loaded or is empty,
-                  or if there are issues with the selector data format.
-
-        The `BY_MAPPING` constant in this module defines the valid strings for 'by'
-        (e.g., "id", "xpath") and their corresponding `selenium.webdriver.common.by.By` objects.
+            dict: Nested dictionary where each page contains selectors as (By, value) tuples.
+                  Format: {"page_name": {"element_name": (By.METHOD, "selector_value")}}
         """
-        config_loader_logger.info(f"Loading selectors from: {filepath}")
-        raw_data = ConfigLoader.load(filepath)
-
-        if not raw_data: # Handles None or empty dict from load()
-            config_loader_logger.warning(f"No data loaded from selector file: {filepath}. Returning empty selectors.")
+        # Mapping from string to Selenium By constants
+        BY_MAPPING = {
+            "id": By.ID,
+            "name": By.NAME,
+            "xpath": By.XPATH,
+            "css_selector": By.CSS_SELECTOR,
+            "class_name": By.CLASS_NAME,
+            "tag_name": By.TAG_NAME,
+            "link_text": By.LINK_TEXT,
+            "partial_link_text": By.PARTIAL_LINK_TEXT
+        }
+        
+        raw_data = ConfigLoader.load(path)
+        
+        if not raw_data:
+            logger.warning(f"No data loaded from selector file: {path}")
             return {}
-
+            
         processed_selectors = {}
-        for page_name, page_selectors in raw_data.items():
-            if not isinstance(page_selectors, dict):
-                config_loader_logger.warning(f"Skipping page '{page_name}' in '{filepath}': expected a dictionary of selectors, got {type(page_selectors)}.")
+        
+        for page_name, page_data in raw_data.items():
+            if not isinstance(page_data, dict):
+                logger.warning(f"Skipping page '{page_name}': expected a dictionary of selectors, got {type(page_data)}")
                 continue
-
+                
             processed_page_selectors = {}
-            for selector_name, selector_data in page_selectors.items():
+            
+            for selector_name, selector_data in page_data.items():
                 if not isinstance(selector_data, dict):
-                    config_loader_logger.warning(f"Skipping selector '{selector_name}' on page '{page_name}' in '{filepath}': expected a dictionary, got {type(selector_data)}.")
+                    logger.warning(f"Skipping selector '{selector_name}' on page '{page_name}': expected a dictionary, got {type(selector_data)}")
                     continue
-
-                by_string = selector_data.get('by')
-                value_string = selector_data.get('value')
-
+                    
+                by_string = selector_data.get("by")
+                value_string = selector_data.get("value")
+                
                 if not by_string or not value_string:
-                    config_loader_logger.warning(
-                        f"Skipping selector '{selector_name}' on page '{page_name}' in '{filepath}': "
-                        f"'by' ({by_string}) or 'value' ({value_string}) is missing or empty."
-                    )
+                    logger.warning(f"Skipping selector '{selector_name}' on page '{page_name}': 'by' ({by_string}) or 'value' ({value_string}) is missing or empty")
                     continue
-
-                by_object = BY_MAPPING.get(by_string.lower())
-                if by_object is None:
-                    config_loader_logger.warning(
-                        f"Skipping selector '{selector_name}' on page '{page_name}' in '{filepath}': "
-                        f"Invalid 'by' strategy '{by_string}'. Valid strategies are: {list(BY_MAPPING.keys())}"
-                    )
+                    
+                by_method = BY_MAPPING.get(by_string.lower())
+                if not by_method:
+                    logger.warning(f"Invalid 'by' strategy '{by_string}' for selector '{selector_name}' on page '{page_name}'. Skipping.")
                     continue
-
-                processed_page_selectors[selector_name] = (by_object, value_string)
-
-            if processed_page_selectors: # Only add page if it has valid selectors
-                 processed_selectors[page_name] = processed_page_selectors
-
-        if not processed_selectors:
-            config_loader_logger.warning(f"No valid selectors processed from file: {filepath}. Raw data was: {raw_data if len(str(raw_data)) < 200 else str(raw_data)[:200] + '...'}")
-        else:
-            config_loader_logger.info(f"Successfully processed {sum(len(ps) for ps in processed_selectors.values())} selectors from {len(processed_selectors)} pages in '{filepath}'.")
-
+                    
+                processed_page_selectors[selector_name] = (by_method, value_string)
+                
+            # Only add the page if it has valid selectors
+            if processed_page_selectors:
+                processed_selectors[page_name] = processed_page_selectors
+                
         return processed_selectors
