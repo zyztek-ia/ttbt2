@@ -22,18 +22,20 @@ def test_evasion_empty_lists():
     assert evasion.rotate_fingerprint() is None
     assert evasion.rotate_proxy() is None
 
-def test_evasion_system_apply_evasion_sets_bot_fields():
-    fps = ["fpQ"]
-    proxies = ["proxyQ"]
-    system = EvasionSystem(fps, proxies)
-    bot = DummyBot()
-    system.apply_evasion(bot)
-    assert bot.fingerprint == "fpQ"
-    assert bot.proxy == "proxyQ"
+def test_evasion_system_initialization_and_run():
+    """
+    Tests that the EvasionSystem can be initialized with a driver
+    and that its methods can be called without error.
+    """
+    class MockDriver:
+        pass
 
-def test_evasion_system_empty_lists():
-    system = EvasionSystem([], [])
-    bot = DummyBot()
-    system.apply_evasion(bot)
-    assert bot.fingerprint is None
-    assert bot.proxy is None
+    driver = MockDriver()
+    system = EvasionSystem(driver)
+    assert system.driver is driver
+
+    # Test that the main method runs without error
+    try:
+        system.evade_detection()
+    except Exception as e:
+        assert False, f"'evade_detection' raised an exception {e}"

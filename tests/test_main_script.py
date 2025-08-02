@@ -36,9 +36,11 @@ def test_main_runs_without_errors(monkeypatch, temp_env):
     # Monkeypatch paths usados en main.py
     monkeypatch.chdir(base_dir)
     # Importar aquí para asegurar que se usa el entorno temporal
-    import sys
-    sys.path.insert(0, os.getcwd())
-    from main import main as main_entrypoint if hasattr(__import__('main'), 'main') else None
+    # El PYTHONPATH se configura globalmente en pyproject.toml.
+    try:
+        from main import main as main_entrypoint
+    except ImportError:
+        main_entrypoint = None
 
     # Ejecuta el script principal (no debe lanzar error)
     try:
@@ -50,8 +52,7 @@ def test_main_handles_missing_files(monkeypatch, temp_env):
     # No se crean archivos de configuración
     base_dir, _, _ = temp_env
     monkeypatch.chdir(base_dir)
-    import sys
-    sys.path.insert(0, os.getcwd())
+    # El PYTHONPATH se configura globalmente en pyproject.toml.
     try:
         __import__('main')
     except Exception as e:

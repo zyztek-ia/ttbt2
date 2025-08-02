@@ -27,7 +27,12 @@ class DataLoader:
         elif data_file.endswith(('.yml', '.yaml')):
             try:
                 with open(data_file, 'r', encoding='utf-8') as f:
-                    return yaml.safe_load(f)
+                    data = yaml.safe_load(f)
+                    # Ensure that if the file is not empty but invalid,
+                    # we return a dict, not a string.
+                    if not isinstance(data, dict):
+                        return {}
+                    return data
             except (FileNotFoundError, yaml.YAMLError):
                 return {}
         return {}

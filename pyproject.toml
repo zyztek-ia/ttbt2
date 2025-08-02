@@ -1,0 +1,7 @@
+[tool.pytest.ini_options]
+pythonpath = [
+  "."
+]
+
+[tool.pylint.'MASTER']
+init-hook='import sys; sys.path.append(".")'

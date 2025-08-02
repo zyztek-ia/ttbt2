@@ -1,3 +1,7 @@
+"""
+Módulo de configuración del logger para el proyecto.
+Utiliza Loguru para un logging potente y configurable.
+"""
 from loguru import logger
 import os
 
