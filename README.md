@@ -36,6 +36,15 @@ cd ttbt1
 pip install -r requirements.txt
 ```
 
+## Creación de ejecutable para Windows
+
+Puedes generar un ejecutable de Windows (`.exe`) automáticamente usando GitHub Actions.
+
+1.  Ve a la pestaña **Actions** de este repositorio en GitHub.
+2.  En el menú de la izquierda, selecciona el workflow **Build Windows Executable**.
+3.  Haz clic en el botón **Run workflow**.
+4.  Una vez que el workflow haya terminado, podrás descargar el ejecutable desde la sección **Artifacts**.
+
 ## Dockerización
 
 ```bash
